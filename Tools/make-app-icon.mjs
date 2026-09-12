@@ -1,8 +1,10 @@
-// 生成 App 图标：黑白配色的"翻开的书"。1024x1024、不透明、无圆角（iOS 自己裁圆角）。
-// 用代码画而不是用图片素材：配色和形状可以精确控制，随时可改，也能自我验证。
+// 【备用设计，不参与构建】用代码画的"翻开的书"图标，仅供比对/换用。
+//
+// 当前 App 图标来自设计稿：Design/AppIcon-source.jpeg，
+// 由 Tools/make-icon-from-logo.ps1 生成到 AppIcon.appiconset。
+// 这个脚本刻意写到 Design/ 目录，避免重跑时覆盖真正的图标。
 //   用法：node Tools/make-app-icon.mjs
-//   输出：EPUBTranslator/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png（白底黑书）
-//         EPUBTranslator/Assets.xcassets/AppIcon.appiconset/AppIcon-1024-dark.png（黑底白书）
+//   输出：Design/icon-book-1024.png / Design/icon-book-1024-dark.png
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -310,18 +312,18 @@ function drawIcon({ dark }) {
 
 // ---------------------------------------------------------------- 输出
 
-const outDir = path.resolve("EPUBTranslator/Assets.xcassets/AppIcon.appiconset");
+const outDir = path.resolve("Design");
 fs.mkdirSync(outDir, { recursive: true });
 
 const light = encodePNG(drawIcon({ dark: false }), SIZE, SIZE);
-fs.writeFileSync(path.join(outDir, "AppIcon-1024.png"), light);
+fs.writeFileSync(path.join(outDir, "icon-book-1024.png"), light);
 
 const dark = encodePNG(drawIcon({ dark: true }), SIZE, SIZE);
-fs.writeFileSync(path.join(outDir, "AppIcon-1024-dark.png"), dark);
+fs.writeFileSync(path.join(outDir, "icon-book-1024-dark.png"), dark);
 
 console.log(`已生成图标：${outDir}`);
-console.log(`  AppIcon-1024.png      ${(light.length / 1024).toFixed(0)} KB`);
-console.log(`  AppIcon-1024-dark.png ${(dark.length / 1024).toFixed(0)} KB`);
+console.log(`  icon-book-1024.png      ${(light.length / 1024).toFixed(0)} KB`);
+console.log(`  icon-book-1024-dark.png ${(dark.length / 1024).toFixed(0)} KB`);
 
 // ---------------------------------------------------------------- 自检
 // 我在终端里看不到图片，所以用低分辨率预览 + 像素采样来确认画对了。
