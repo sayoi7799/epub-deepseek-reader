@@ -9,6 +9,7 @@ xcuserdata/
 # 构建产物
 *.ipa
 Payload/
+build.log
 
 # macOS
 .DS_Store

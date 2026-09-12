@@ -43,7 +43,30 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGN_ENTITLEMENTS="" \
-            build
+            build 2>&1 | tee build.log
+
+      # 把编译错误压成几行写进本次运行的 Summary，
+      # 这样在 Windows 上不用复制上千行日志也能看到根因。
+      - name: Compile error summary
+        if: always()
+        run: |
+          if [ ! -f build.log ]; then
+            echo "没有 build.log（构建步骤没有跑到）" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          {
+            echo "## 编译错误（最多 20 行）"
+            echo '```'
+            grep -E "error: " build.log | head -n 20 || echo "没有匹配到 error:"
+            echo '```'
+            echo "## 失败的命令"
+            echo '```'
+            grep -A 6 "The following build commands failed" build.log | head -n 10 || echo "无"
+            echo '```'
+            echo "完整日志在下面 Artifacts 的 xcodebuild-log 里。"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "---- 错误摘要 ----"
+          grep -E "error: " build.log | head -n 20 || true
 
       - name: Package unsigned .ipa
         run: |
@@ -74,6 +97,7 @@ jobs:
         with:
           name: xcodebuild-log
           path: |
+            build.log
             build/Logs/Build/*.xcactivitylog
           if-no-files-found: ignore
           retention-days: 7

@@ -162,7 +162,7 @@ struct ZipArchive {
             result.append(
                 Entry(
                     path: name,
-                    compressionMethod: method,
+                    compressionMethod: UInt16(clamping: method),
                     compressedSize: compressedSize,
                     uncompressedSize: uncompressedSize,
                     localHeaderOffset: localHeaderOffset

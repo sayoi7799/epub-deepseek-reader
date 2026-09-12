@@ -51,7 +51,9 @@ struct SettingsView: View {
     // MARK: - 各分区
 
     private var apiSection: some View {
-        Section {
+        @Bindable var settings = settings
+
+        return Section {
             VStack(alignment: .leading, spacing: 10) {
                 SecureField("sk-...", text: $apiKeyDraft)
                     .textInputAutocapitalization(.never)
