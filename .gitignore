@@ -1,0 +1,14 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+
+# 构建产物
+*.ipa
+Payload/
+
+# macOS
+.DS_Store

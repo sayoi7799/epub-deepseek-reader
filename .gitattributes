@@ -1,0 +1,20 @@
+# 构建只在 macOS / Linux 上进行，统一用 LF，避免 Windows 检出时把
+# shell 脚本（Tools/build-unsigned-ipa.sh）和 CI 配置改成 CRLF。
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.swift text eol=lf
+*.plist text eol=lf
+*.pbxproj text eol=lf
+*.xcscheme text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.md text eol=lf
+
+# 二进制
+*.epub binary
+*.png binary
+*.jpg binary
+*.ipa binary
