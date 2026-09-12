@@ -39,10 +39,12 @@ struct EPUBParser {
         }
         try? fileManager.copyItem(at: sourceURL, to: originalURL)
 
-        return try parse(contentRoot: contentURL, fallbackTitle: (sourceFileName as NSString).deletingPathExtension)
+        return try parse(contentRoot: contentURL, defaultTitle: (sourceFileName as NSString).deletingPathExtension)
     }
 
-    static func parse(contentRoot: URL, fallbackTitle: String = "未命名书籍") throws -> ParsedBook {
+    /// - Parameter defaultTitle: 书里没有 dc:title 时使用的书名（注意不要叫 fallbackTitle，
+    ///   否则会遮住下面的 `fallbackTitle(for:index:)` 方法）。
+    static func parse(contentRoot: URL, defaultTitle: String = "未命名书籍") throws -> ParsedBook {
         let containerURL = contentRoot.appendingPathComponent("META-INF/container.xml")
         guard let containerData = try? Data(contentsOf: containerURL) else {
             throw EPUBError.missingContainer
@@ -124,7 +126,7 @@ struct EPUBParser {
         )
 
         return ParsedBook(
-            title: title.isEmpty ? fallbackTitle : title,
+            title: title.isEmpty ? defaultTitle : title,
             author: creator,
             language: language,
             coverPath: coverPath,

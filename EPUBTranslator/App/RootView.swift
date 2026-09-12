@@ -11,26 +11,9 @@ struct RootView: View {
         @Bindable var router = router
 
         TabView(selection: $router.selectedTab) {
-            NavigationStack(path: $libraryPath) {
-                LibraryView()
-                    .navigationDestination(for: Book.self) { book in
-                        ReaderView(book: book)
-                    }
-            }
-            .tabItem { Label(AppRouter.Tab.library.title, systemImage: AppRouter.Tab.library.systemImage) }
-            .tag(AppRouter.Tab.library)
-
-            NavigationStack {
-                HistoryView()
-            }
-            .tabItem { Label(AppRouter.Tab.history.title, systemImage: AppRouter.Tab.history.systemImage) }
-            .tag(AppRouter.Tab.history)
-
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem { Label(AppRouter.Tab.settings.title, systemImage: AppRouter.Tab.settings.systemImage) }
-            .tag(AppRouter.Tab.settings)
+            libraryTab
+            historyTab
+            settingsTab
         }
         .onChange(of: router.bookToOpen) { _, newValue in
             guard let book = newValue else { return }
@@ -76,5 +59,38 @@ struct RootView: View {
         router.pendingBookID = nil
         router.selectedTab = .library
         libraryPath = [book]
+    }
+
+    // 每个 tab 拆成独立属性：整个 body 写成一坨大表达式时，
+    // 编译器会因为类型推断太复杂而报 "unable to type-check this expression in reasonable time"。
+    private var libraryTab: some View {
+        NavigationStack(path: $libraryPath) {
+            LibraryView()
+                .navigationDestination(for: Book.self) { book in
+                    ReaderView(book: book)
+                }
+        }
+        .tabItem { tabLabel(.library) }
+        .tag(AppRouter.Tab.library)
+    }
+
+    private var historyTab: some View {
+        NavigationStack {
+            HistoryView()
+        }
+        .tabItem { tabLabel(.history) }
+        .tag(AppRouter.Tab.history)
+    }
+
+    private var settingsTab: some View {
+        NavigationStack {
+            SettingsView()
+        }
+        .tabItem { tabLabel(.settings) }
+        .tag(AppRouter.Tab.settings)
+    }
+
+    private func tabLabel(_ tab: AppRouter.Tab) -> some View {
+        Label(tab.title, systemImage: tab.systemImage)
     }
 }

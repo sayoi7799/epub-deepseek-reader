@@ -106,7 +106,7 @@ struct EPUBTranslatorShortcuts: AppShortcutsProvider {
                 "\(.applicationName)翻译",
             ],
             shortTitle: "翻译文本",
-            systemImage: "character.book.closed"
+            systemImageName: "character.book.closed"
         )
         AppShortcut(
             intent: TranslateClipboardIntent(),
@@ -114,7 +114,7 @@ struct EPUBTranslatorShortcuts: AppShortcutsProvider {
                 "用\(.applicationName)翻译剪贴板",
             ],
             shortTitle: "翻译剪贴板",
-            systemImage: "doc.on.clipboard"
+            systemImageName: "doc.on.clipboard"
         )
         AppShortcut(
             intent: ContinueReadingIntent(),
@@ -122,7 +122,7 @@ struct EPUBTranslatorShortcuts: AppShortcutsProvider {
                 "用\(.applicationName)继续读书",
             ],
             shortTitle: "继续阅读",
-            systemImage: "book"
+            systemImageName: "book"
         )
     }
 }
