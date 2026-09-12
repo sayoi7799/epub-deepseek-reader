@@ -61,7 +61,7 @@ MacinCloud、Scaleway/OVH 的 Apple Silicon 实例、机房 Mac mini、朋友的
    git push -u origin main
    ```
 2. 打开仓库的 **Actions** 标签页 → 选 `Build unsigned IPA (Windows-friendly)` → **Run workflow**。
-3. 跑完后（约 3–8 分钟）在这一次运行的 Artifacts 里下载 `EPUBTranslator-unsigned-ipa`，解压得到 `EPUBTranslator-unsigned.ipa`。**注意：如果这一步失败，说明代码有编译错误**（这个工程还没在任何机器上编译过），把日志里 `error:` 开头的几行发给我，我改完你再推一次。
+3. 跑完后（约 3–8 分钟）在这一次运行的 Artifacts 里下载 `EPUBTranslator-unsigned-ipa`，解压得到 `EPUBTranslator-unsigned.ipa`。如果这一步失败，运行页的 **Summary** 里会直接列出编译错误（workflow 里有个 `Compile error summary` 步骤会把 `error:` 行摘出来），把那一小段发出来就能定位。
 4. Windows 侧安装未签名 IPA（二选一）：
    - 先装 **Apple Devices**（微软商店）或 iTunes，用数据线连上 iPhone 并「信任此电脑」。
    - 用 **Sideloadly** 或 **AltStore / SideStore** 打开这个 IPA，填你的 Apple ID，它会用你的账号现场签名并装到手机上。
@@ -135,9 +135,19 @@ Tools/                              开发用脚本（不参与 App 构建）
 - **提示词是产品核心**：`PromptBuilder.swift` 里写了明确的反翻译腔规则（不要逐词对应、不要滥用的/被/进行、对白要有口气、不要补戏……），并把上下文包在 `<<< >>>` 之外，告诉模型「只翻译这一部分」。风格、术语表、额外要求都会拼进提示词。
 - **温度默认 1.3**：DeepSeek 官方文档给翻译任务的推荐值，实测比 0.7 更少翻译腔。
 
-## 这次的验证情况（重要）
+## 验证情况
 
-开发这台机器是 Windows，没有 Xcode 和 iOS 模拟器，所以**这个工程没有在这里编译和跑过模拟器**。为了让交付物尽量可靠，做了这些检查：
+开发这台机器是 Windows，没有 Xcode 和 iOS 模拟器，所以本地只能做算法级验证，真正的编译放在 GitHub Actions 的 macOS runner 上跑。
+
+**✅ 编译已通过**：commit `b3a1cd5` 的 workflow run #4 全绿——App target 与 `EPUBTranslatorWidgets` 扩展 target 都能编译、链接、嵌入，并产出未签名 IPA（约 1 MB）。产物结构也核对过：
+
+- `Payload/EPUBTranslator.app/EPUBTranslator`（可执行文件）+ `Info.plist` + `Assets.car`
+- `Payload/EPUBTranslator.app/PlugIns/EPUBTranslatorWidgets.appex/`（灵动岛扩展确实嵌进去了）
+- `Payload/EPUBTranslator.app/Metadata.appintents/`（App Intents / 快捷指令元数据已生成）
+
+**⚠️ 还没验证的**：真机上的运行时行为——DeepSeek 的实际翻译效果、WKWebView 里点按/选中的回传、灵动岛卡片的真实显示效果。这些要装上 App 才能真正确认。
+
+本地还做了这些算法级检查：
 
 1. **解压算法做了等价移植验证**：`Tools/inflate-port.mjs`、`Tools/zip-port.mjs` 是 `Inflate.swift` / `ZipArchive.swift` 的等价 JS 实现，`Tools/validate.mjs` 用 300+ 组用例验证过：
    - 压缩级别 0–9、`Z_FILTERED` / `Z_HUFFMAN_ONLY` / `Z_RLE` / `Z_FIXED` 各种块类型；
