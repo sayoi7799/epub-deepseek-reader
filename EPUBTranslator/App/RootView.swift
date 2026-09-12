@@ -4,6 +4,7 @@ struct RootView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(LibraryStore.self) private var library
     @Environment(AppRouter.self) private var router
+    @Environment(TranslationEngine.self) private var engine
 
     @State private var libraryPath: [Book] = []
 
@@ -67,7 +68,7 @@ struct RootView: View {
         NavigationStack(path: $libraryPath) {
             LibraryView()
                 .navigationDestination(for: Book.self) { book in
-                    ReaderView(book: book)
+                    ReaderView(book: book, library: library, settings: settings, engine: engine)
                 }
         }
         .tabItem { tabLabel(.library) }
