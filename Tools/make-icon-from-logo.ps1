@@ -1,5 +1,5 @@
 # 把设计稿（黑白像素风 logo）转成 iOS App 图标：
-#   - 输出 1024x1024、不透明（iOS 图标不能带透明通道）
+#   - 输出 1024x1024、24 位 RGB（没有 alpha 通道：App Store 上传时图标不允许带透明通道）
 #   - 二值化：把 JPEG 压缩噪点清掉，得到干脆的黑白像素边缘
 #   - 如果源图不是 1024x1024，用最近邻整数倍放大并居中留白（像素画不能被平滑插值）
 #   - 同时生成深色模式版本（黑白反相）
@@ -19,7 +19,7 @@ $sw = $img.Width
 $sh = $img.Height
 
 $size = 1024
-$canvas = New-Object System.Drawing.Bitmap($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+$canvas = New-Object System.Drawing.Bitmap($size, $size, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
 $g = [System.Drawing.Graphics]::FromImage($canvas)
 $g.Clear([System.Drawing.Color]::White)
 $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::NearestNeighbor
@@ -54,19 +54,23 @@ function Convert-ToBlackAndWhite {
         [int]$Limit
     )
     $rect = New-Object System.Drawing.Rectangle(0, 0, $Bitmap.Width, $Bitmap.Height)
-    $data = $Bitmap.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::ReadWrite, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    $data = $Bitmap.LockBits($rect, [System.Drawing.Imaging.ImageLockMode]::ReadWrite, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+    $stride = $data.Stride
     $count = $data.Stride * $data.Height
     $bytes = New-Object byte[] $count
     [System.Runtime.InteropServices.Marshal]::Copy($data.Scan0, $bytes, 0, $count)
 
-    for ($i = 0; $i -lt $count; $i += 4) {
-        $lum = 0.299 * $bytes[$i + 2] + 0.587 * $bytes[$i + 1] + 0.114 * $bytes[$i]
-        $value = if ($lum -ge $Limit) { 255 } else { 0 }
-        if ($Invert) { $value = 255 - $value }
-        $bytes[$i] = $value
-        $bytes[$i + 1] = $value
-        $bytes[$i + 2] = $value
-        $bytes[$i + 3] = 255
+    for ($y = 0; $y -lt $Bitmap.Height; $y++) {
+        $rowStart = $y * $stride
+        for ($x = 0; $x -lt $Bitmap.Width; $x++) {
+            $i = $rowStart + $x * 3
+            $lum = 0.299 * $bytes[$i + 2] + 0.587 * $bytes[$i + 1] + 0.114 * $bytes[$i]
+            $value = if ($lum -ge $Limit) { 255 } else { 0 }
+            if ($Invert) { $value = 255 - $value }
+            $bytes[$i] = $value
+            $bytes[$i + 1] = $value
+            $bytes[$i + 2] = $value
+        }
     }
 
     [System.Runtime.InteropServices.Marshal]::Copy($bytes, 0, $data.Scan0, $count)
